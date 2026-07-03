@@ -1,44 +1,48 @@
-//RESUELVE TUS EJERCICIOS AQUI
-// ==========================================
-// Dog API - Quiero un perrito
-// ==========================================
+ 
 
-// 1. getAllBreeds: Devuelve un array de strings con todas las razas
-async function getAllBreeds() {
-  try {
-    const response = await fetch("https://dog.ceo/api/breeds/list/all");
-    const data = await response.json();
-    // Object.keys nos da un array con las propiedades (las razas) del objeto message
-    return Object.keys(data.message);
-  } catch (error) {
-    console.error("Error en getAllBreeds:", error);
-  }
+const consulta = async (url) =>{
+  try{
+  const resp = await fetch(url);
+  if(!resp.ok) throw resp.status;
+  return await resp.json();
+}catch(error){
+  throw `The query produced an error: ${error}`
+}
 }
 
-// 2. getRandomDog: Obtiene una imagen random de una raza cualquiera
-async function getRandomDog() {
+
+//1
+const getAllBreeds = async ()=> {
   try {
-    const response = await fetch("https://dog.ceo/api/breeds/image/random");
-    const data = await response.json();
-    return data.message; // Devuelve la URL de la imagen
+    const data = await consulta("https://dog.ceo/api/breeds/list/all");
+    if (data.status !== 'success') throw 'Error getting data'
+    return Object.keys(data.msg)
   } catch (error) {
-    console.error("Error en getRandomDog:", error);
+    console.log(error)
   }
 }
-
-// 3. getAllImagesByBreed: Obtiene todas las imágenes de la raza komondor
-async function getAllImagesByBreed() {
+//2
+const getRandomDog = async ()=> {
+  try {
+    const data = await consulta("https://dog.ceo/api/breeds/image/random");
+    if (data.status !== 'success') throw 'Error getting Image'
+    return data.message;
+  } catch (error) {
+    console.log(error)
+  }
+}
+//3
+const getAllImagesByBreed = async ()=> {
   try {
     const response = await fetch("https://dog.ceo/api/breed/komondor/images");
     const data = await response.json();
-    return data.message; // Devuelve el array de URLs de imágenes
+    return data.message; 
   } catch (error) {
-    console.error("Error en getAllImagesByBreed:", error);
+    console.log(error)
   }
 }
-
-// 4. getAllImagesByBreed2(breed): Devuelve imágenes de la raza pasada por argumento
-async function getAllImagesByBreed2(breed) {
+//4
+const getAllImagesByBreed2 = async (breed) => {
   try {
     const response = await fetch(`https://dog.ceo/api/breed/${breed}/images`);
     const data = await response.json();
@@ -47,35 +51,28 @@ async function getAllImagesByBreed2(breed) {
     console.error(`Error en getAllImagesByBreed2 para ${breed}:`, error);
   }
 }
-
-// ==========================================
-// GitHub API (I) - Información de usuario
-// ==========================================
-
-// 5. getGitHubUserProfile: Obtiene el perfil a partir del username
-async function getGitHubUserProfile(username) {
+//5
+const getGitHubUserProfile = async (username) =>{
   try {
-    const response = await fetch(`https://api.github.com/users/${username}`);
-    const data = await response.json();
+    const data = await consulta(`https://api.github.com/users/${username}`);
+    if (data.login.toLowerCase() !== username) throw `Error getting profile of user ${username}`
     return data;
   } catch (error) {
-    console.error("Error en getGitHubUserProfile:", error);
+    console.log(error)
   }
 }
-
-// 6. printGithubUserProfile: Retorna {img, name} y pinta en el DOM
-async function printGithubUserProfile(username) {
+//6
+const printGithubUserProfile= async (username) => {
   try {
     const response = await fetch(`https://api.github.com/users/${username}`);
     const data = await response.json();
-    
-    // Guardamos los datos que nos pide el test
+  
     const userProfile = {
       img: data.avatar_url,
       name: data.name
     };
 
-    // Pintamos en el DOM (creamos elementos básicos en el body)
+   
     const imgElement = document.createElement("img");
     imgElement.src = userProfile.img;
     imgElement.alt = userProfile.name || "User Avatar";
@@ -88,79 +85,68 @@ async function printGithubUserProfile(username) {
 
     return userProfile;
   } catch (error) {
-    console.error("Error en printGithubUserProfile:", error);
+    console.log(error)
   }
 }
-
-// 7. getAndPrintGitHubUserProfile: Devuelve un string con la tarjeta HTML exacta
-async function getAndPrintGitHubUserProfile(username) {
+//7
+const getAndPrintGitHubUserProfile = async (username) => {
   try {
-    const response = await fetch(`https://api.github.com/users/${username}`);
-    const data = await response.json();
-
-    const name = data.name || username;
-    const avatar = data.avatar_url;
-    const repos = data.public_repos;
-
-    // Retorna la estructura de sección exacta solicitada en el enunciado
-    return `
-<section>
-    <img src="${avatar}" alt="imagen de usuario">
-    <h1>${name}</h1>
-    <p>Public repos: ${repos}</p>
-</section>`.trim(); // .trim() elimina espacios innecesarios que puedan romper el test
+    const user = await getGitHubUserProfile(username);
+    const sectionElement = document.createElement('section');
+    const userImgElement = document.createElement('img');
+    const userNameElement = document.createElement('h1');
+    const userReposElement = document.createElement('p');
+    userImgElement.src = user.avatar_url;
+    userImgElement.alt = user.name;
+    userNameElement.appendChild(document.createTextNode(user.name));
+    usrrReposElement.appendChild(userImgElement, userNameElement, userReposElement);
+    return sectionElement.outerHTML;
   } catch (error) {
-    console.error("Error en getAndPrintGitHubUserProfile:", error);
+    console.log(error)
   }
 }
+//8
+const createGitHubUserFindForm = ()=>{
+  const form = document.createElement('form');
+  const inputLabel = document.createElement('label');
+  const input = document.createElement('input');
+  const button = document.createElement('input');
 
-// 8. Manipulación del DOM (Interactividad sin testear)
-// Creamos los elementos dinámicamente cuando el DOM esté listo
-document.addEventListener("DOMContentLoaded", () => {
-  const input = document.createElement("input");
-  input.type = "text";
-  input.placeholder = "Nombre de usuario de GitHub";
-  
-  const boton = document.createElement("button");
-  boton.textContent = "Buscar";
+  inputLabel.setAttribute('for', 'input');
+  inputLabel.appendChild(document.createTextNode('Nombre de usuario'));
+  input.id = 'input';
+  button.id = 'button';
+  button.value = 'Buscar usuario';
+  button.type = 'submit';
 
-  const resultadoDiv = document.createElement("div");
+  form.append(inputLabel, input, button);
+  document.body.prepend(form);
 
-  document.body.appendChild(input);
-  document.body.appendChild(boton);
-  document.body.appendChild(resultadoDiv);
-
-  boton.addEventListener("click", async () => {
-    const username = input.value.trim();
-    if (username) {
-      resultadoDiv.innerHTML = "Cargando...";
-      const cardHtml = await getAndPrintGitHubUserProfile(username);
-      resultadoDiv.innerHTML = cardHtml;
-    }
+  return form;
+}
+document.addEventListener("DOMContentLoaded", (ev) => {
+  createGitHubUserFindForm().addEventListener('submit', async (ev)=>{
+    ev.preventDefault();
+    const profile = await getAndPrintGitHubUserProfile(ev.target.input.value);
+    console.log(profile);
   });
 });
-
-// ==========================================
-// GitHub API (II) - Promesas en lote
-// ==========================================
-
-// 9. fetchGithubUsers: Recibe array de nombres, usa Promise.all()
-async function fetchGithubUsers(userNames) {
-  // Pasos del enunciado:
-  // 1. Mapear el array y hacer un fetch para cada uno (crea un array de promesas)
-  const promesasFetch = userNames.map(name => fetch(`https://api.github.com/users/${name}`));
-
-  // 2. Resolver todas a la vez con Promise.all()
-  const respuestas = await Promise.all(promesasFetch);
-
-  // 3. Convertir todas las respuestas de red en JSON (otra tanda de promesas que resolvemos juntas)
-  const usuariosData = await Promise.all(respuestas.map(res => res.json()));
-
-  // 4. Imprimir por consola lo solicitado
-  usuariosData.forEach(user => {
-    console.log(`URL del repositorio: ${user.html_url}`);
-    console.log(`Nombre de usuario: ${user.name || user.login}`);
-  });
-
-  return usuariosData; // Retornamos los datos procesados para el validador del test
+ //9
+const getGitHubUserProfileOnlyNameAndUrl = async username =>{
+  try{
+    const userprofile = await getGitHubUserProfile(username);
+    if(!userprofile.name || !userProfile.html_url) throw `Fallo al recuperar el perfil del usuario ${username}`;
+    return { name: userProfile.name, html_url: userProfile.html_url}
+  }catch(error){
+    console.log(error)
+  }
+}
+const fetchGithubUsers = async (userNames) => {
+try{
+    const promesas = Promise.all(usernames.map(username => getGitHubUserProfileOnlyNameAndUrl(username)));
+    (await promesas).forEach(usuario => console.log(`Name: ${usuario.name} , URL: ${usuario.html_url}`));
+    return promesas;
+  }catch(error){
+    console.log(error)
+  } 
 }
